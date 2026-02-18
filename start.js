@@ -3,6 +3,28 @@
 /* eslint-disable no-console,@typescript-eslint/no-var-requires */
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
+
+// 尝试加载 .env 文件
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim();
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    });
+    console.log('Loaded environment variables from .env');
+  }
+} catch (error) {
+  console.error('Error loading .env file:', error);
+}
 
 // 调用 generate-manifest.js 生成 manifest.json
 function generateManifest() {
@@ -27,9 +49,8 @@ generateManifest();
 require('./server.js');
 
 // 每 1 秒轮询一次，直到请求成功
-const TARGET_URL = `http://${process.env.HOSTNAME || 'localhost'}:${
-  process.env.PORT || 3000
-}/login`;
+const TARGET_URL = `http://${process.env.HOSTNAME || 'localhost'}:${process.env.PORT || 3000
+  }/login`;
 
 const intervalId = setInterval(() => {
   console.log(`Fetching ${TARGET_URL} ...`);
@@ -57,9 +78,8 @@ const intervalId = setInterval(() => {
 
 // 执行 cron 任务的函数
 function executeCronJob() {
-  const cronUrl = `http://${process.env.HOSTNAME || 'localhost'}:${
-    process.env.PORT || 3000
-  }/api/cron`;
+  const cronUrl = `http://${process.env.HOSTNAME || 'localhost'}:${process.env.PORT || 3000
+    }/api/cron`;
 
   console.log(`Executing cron job: ${cronUrl}`);
 
